@@ -2,6 +2,7 @@
   --cream: #f2eee5;
   --ink: #111111;
   --pink: #f0949c;
+  --deep-blue: #123b6d;
   --hairline: rgba(17, 17, 17, 0.28);
   --pad: clamp(20px, 4.2vw, 64px);
   --gap: clamp(10px, 1.25vw, 20px);
@@ -978,7 +979,7 @@ a {
 .end-hero {
   flex: 0 0 auto;
   align-items: end;
-  padding: clamp(28px, 5vh, 54px) 0 24px;
+  padding: clamp(28px, 5vh, 54px) 0 12px;
 }
 
 .end-title-wrap {
@@ -1001,6 +1002,36 @@ a {
   margin: 16px 0 0;
   font-size: 11px;
   line-height: 1.4;
+}
+
+.end-credit-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  color: var(--ink);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.4;
+  text-decoration: none;
+}
+
+.end-credit-link:visited {
+  color: var(--ink);
+}
+
+.end-credit-link:hover span {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.github-icon {
+  flex: 0 0 auto;
+  width: 17px;
+  height: 17px;
+  fill: var(--ink);
+  transform: translateY(1px);
 }
 
 .end-score {
@@ -1353,6 +1384,19 @@ a {
   font-weight: 400;
   line-height: 1.6;
   letter-spacing: 0;
+}
+
+.credit-link,
+.credit-link:visited {
+  color: var(--deep-blue);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.credit-link:hover {
+  background: var(--pink);
+  color: var(--deep-blue);
 }
 
 .formula-column {
