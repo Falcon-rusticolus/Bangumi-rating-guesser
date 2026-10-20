@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#F2EEE5">
+  <meta name="description" content="动画猜评分：从封面、制作公司与放送日期猜测 Bangumi 评分的互动小游戏。">
+  <title>动画猜评分 · Anime Rating Guesser</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main-content">跳到主要内容</a>
+
+  <main id="main-content" class="app">
+    <!-- ============================== 主菜单 ============================== -->
+    <section class="screen screen--menu is-active" id="screen-menu" aria-labelledby="menu-title">
+      <header class="masthead grid">
+        <div class="masthead__brand col-1-3">
+          <span>BANGUMI</span>
+          <span>RATING GUESSER</span>
+        </div>
+        <div class="masthead__credit col-7-9">
+          <span>制作 / 矛隼</span>
+        </div>
+      </header>
+
+      <div class="hero">
+        <div class="hero__watermark" aria-hidden="true">bangumi</div>
+        <div class="grid hero__grid">
+          <h1 class="hero__title col-1-9" id="menu-title">
+            <span class="hero__line">动画</span>
+            <span class="hero__line">猜评分</span>
+          </h1>
+        </div>
+      </div>
+
+      <div class="menu-lower">
+        <div class="grid menu-lower__grid">
+          <div class="menu-intro col-1-4">
+            <h2 class="menu-subtitle">Anime Rating Guesser</h2>
+            <p class="menu-lede">一局10 轮，用你对动画的了解，逼近 Bangumi 的真实评分。</p>
+            <p class="menu-caption">无需登录 · 无时间限制 · 单局约 3 分钟</p>
+          </div>
+
+          <div class="menu-actions col-5-8">
+            <button class="action action--primary" id="start-button" type="button">
+              <span class="action__copy">
+                <span class="action__index">01 / START</span>
+                <span class="action__label">开始挑战</span>
+              </span>
+              <span class="action__arrow" aria-hidden="true">→</span>
+            </button>
+            <button class="action action--dark" id="rules-button" type="button">
+              <span class="action__copy">
+                <span class="action__index">02 / RULES</span>
+                <span class="action__label">规则介绍</span>
+              </span>
+              <span class="action__arrow" aria-hidden="true">＋</span>
+            </button>
+          </div>
+
+          <div class="menu-rounds col-10-12" aria-label="每局十轮">
+            <span class="micro-label">一局游戏轮次数 /ROUNDS PER GAME</span>
+            <strong class="menu-rounds__number">10</strong>
+            <span class="micro-label">满分 100</span>
+          </div>
+        </div>
+      </div>
+
+      <footer class="menu-footer grid">
+        <span class="col-1-6">DATA / BANGUMI 番组计划</span>
+        <span class="col-7-9">制作 / 矛隼</span>
+        <span class="col-10-12">Powered by bangumi.tv</span>
+      </footer>
+    </section>
+
+    <!-- ============================== 游戏界面 ============================== -->
+    <section class="screen screen--game" id="screen-game" aria-labelledby="anime-title" hidden>
+      <header class="game-header">
+        <div class="grid game-header__grid">
+          <button class="brand-mini brand-mini--button col-1-3" id="game-home-button" type="button" title="返回主菜单" aria-label="返回主菜单">
+            <span class="brand-mini__title">动画猜评分</span>
+            <span class="brand-mini__sub">ANIME RATING GUESSER</span>
+          </button>
+
+          <div class="progress-block col-4-9">
+            <div class="progress-block__head">
+              <span>本局进度 / PROGRESS</span>
+              <div class="progress-block__tools">
+                <span id="progress-label">01 / 10</span>
+                <button class="restart-button" id="restart-button" type="button">重新开始</button>
+              </div>
+            </div>
+            <div class="progress-track" role="progressbar" aria-label="本局游戏进度" aria-valuemin="0" aria-valuemax="10" aria-valuenow="0" id="progressbar">
+              <div class="progress-fill" id="progress-fill"></div>
+              <div class="progress-ticks" aria-hidden="true">
+                <span></span><span></span><span></span><span></span><span></span>
+                <span></span><span></span><span></span><span></span><span></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="score-box col-10-12">
+            <div class="score-box__head">
+              <span>当前总分</span>
+              <span>TOTAL</span>
+            </div>
+            <div class="score-box__value">
+              <strong id="current-score">0.00</strong>
+              <span>/ 100</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div class="game-main">
+        <div class="grid game-grid">
+          <aside class="cover-zone col-1-3" aria-label="动画封面">
+            <div class="round-head">
+              <span class="round-head__number" id="round-number">01</span>
+              <span class="round-head__total">/ 10</span>
+              <span class="round-head__label">ROUND</span>
+            </div>
+            <figure class="cover-figure">
+              <img class="cover-image" id="cover-image" src="" alt="" width="340" height="476">
+            </figure>
+            <figcaption class="cover-caption">
+              <span>封面 / COVER</span>
+              <span id="cover-index">NO. 001</span>
+            </figcaption>
+          </aside>
+
+          <section class="question-zone col-4-12">
+            <div class="question-kicker">
+              <span>现在猜 / YOUR CALL</span>
+              <span class="question-kicker__rule" aria-hidden="true"></span>
+              <span id="question-number">QUESTION 01</span>
+            </div>
+
+            <h1 class="anime-title" id="anime-title">—</h1>
+
+            <div class="anime-meta">
+              <div class="anime-meta__item">
+                <span class="micro-label">制作公司 / STUDIO</span>
+                <p id="anime-studio">—</p>
+              </div>
+              <div class="anime-meta__item">
+                <span class="micro-label">放送开始 / RELEASED</span>
+                <p id="anime-date">—</p>
+              </div>
+            </div>
+
+            <div class="hidden-stats" aria-label="待揭晓的 Bangumi 排名与评分">
+              <div class="hidden-stat hidden-stat--rank" id="rank-stat">
+                <span class="micro-label">BANGUMI 排名 / RANK</span>
+                <strong class="hidden-stat__value" id="rank-value">—</strong>
+                <span class="hidden-stat__foot">全站排名</span>
+              </div>
+              <div class="hidden-stat hidden-stat--rating" id="rating-stat">
+                <span class="micro-label">BANGUMI 评分 / SCORE</span>
+                <strong class="hidden-stat__value" id="rating-value">—</strong>
+                <span class="hidden-stat__foot">满分 10</span>
+              </div>
+            </div>
+
+            <form class="guess-form" id="guess-form" novalidate>
+              <div class="guess-form__head">
+                <label for="guess-input">你的评分猜测</label>
+                <span>0.0 — 10.0 / 保留一位小数</span>
+              </div>
+              <div class="guess-form__row">
+                <div class="guess-input-wrap">
+                  <input
+                    id="guess-input"
+                    name="guess"
+                    type="number"
+                    inputmode="decimal"
+                    min="0"
+                    max="10"
+                    step="0.1"
+                    placeholder="0.0"
+                    autocomplete="off"
+                    aria-describedby="guess-hint guess-error"
+                  >
+                  <span class="guess-input-wrap__suffix" aria-hidden="true">/ 10</span>
+                </div>
+                <button class="confirm-button" id="confirm-button" type="submit">
+                  <span class="confirm-button__copy">
+                    <span class="confirm-button__index" id="confirm-index">SUBMIT</span>
+                    <span class="confirm-button__label" id="confirm-label">确认</span>
+                  </span>
+                  <span class="confirm-button__arrow" id="confirm-arrow" aria-hidden="true">→</span>
+                </button>
+              </div>
+              <p class="guess-hint" id="guess-hint">输入你估计的 Bangumi 加权平均分。</p>
+              <p class="guess-error" id="guess-error" aria-live="polite"></p>
+            </form>
+
+            <div class="round-result" id="round-result" hidden>
+              <div class="round-result__item">
+                <span class="micro-label">你的猜测</span>
+                <strong id="result-guess">—</strong>
+              </div>
+              <div class="round-result__item">
+                <span class="micro-label">绝对误差</span>
+                <strong id="result-error">—</strong>
+              </div>
+              <div class="round-result__score">
+                <span class="micro-label">本轮得分</span>
+                <strong id="result-score">—</strong>
+              </div>
+              <p class="round-result__comment" id="result-comment">—</p>
+            </div>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================== 游戏结束 ============================== -->
+    <section class="screen screen--end" id="screen-end" aria-labelledby="end-title" hidden>
+      <header class="masthead grid">
+        <div class="masthead__brand col-1-3">
+          <span>BANGUMI</span>
+          <span>RATING GUESSER</span>
+        </div>
+        <div class="masthead__meta col-4-8">
+          <span>SESSION COMPLETE / 10 OF 10</span>
+        </div>
+        <div class="masthead__issue col-10-12">
+          <span>FINAL</span>
+          <span>SCORE REPORT</span>
+        </div>
+      </header>
+
+      <div class="end-hero grid">
+        <div class="end-title-wrap col-1-8">
+          <p class="overline">本局完成 / YOUR RESULT</p>
+          <h1 class="end-title" id="end-title" tabindex="-1">游戏<br><span>结束</span></h1>
+          <p class="end-subtitle">你完成了 10 次评分判断。</p>
+        </div>
+        <div class="end-score col-9-12">
+          <span class="end-score__label">本局总分 / TOTAL SCORE</span>
+          <strong class="end-score__value" id="final-score">0.00</strong>
+          <span class="end-score__max">/ 100</span>
+        </div>
+      </div>
+
+      <div class="end-lower grid">
+        <section class="score-record col-1-7" aria-labelledby="record-title">
+          <div class="section-head">
+            <h2 id="record-title">本局记录</h2>
+            <span>ROUND BY ROUND</span>
+          </div>
+          <div class="score-table-wrap">
+            <table class="score-table">
+              <thead>
+                <tr>
+                  <th scope="col">轮次</th>
+                  <th scope="col">作品</th>
+                  <th scope="col">猜测</th>
+                  <th scope="col">实际</th>
+                  <th scope="col">得分</th>
+                </tr>
+              </thead>
+              <tbody id="score-table-body"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <aside class="end-aside col-9-12">
+          <p class="end-verdict" id="end-verdict">—</p>
+          <p class="end-caption">分数依据 Bangumi 抓取时排名与评分计算。同一部动画在下一局中的位置可能再次出现。</p>
+          <button class="back-button" id="back-menu-button" type="button">
+            <span class="back-button__copy">
+              <span class="back-button__index">RETURN / MAIN MENU</span>
+              <span class="back-button__label">回到主菜单</span>
+            </span>
+            <span class="back-button__arrow" aria-hidden="true">←</span>
+          </button>
+        </aside>
+      </div>
+
+      <footer class="menu-footer grid">
+        <span class="col-1-6">DATA / BANGUMI 番组计划</span>
+        <span class="col-7-9">制作 / 矛隼</span>
+        <span class="col-10-12">Powered by bangumi.tv</span>
+      </footer>
+    </section>
+  </main>
+
+  <!-- ============================== 规则与数据弹窗 ============================== -->
+  <div class="modal" id="rules-modal" hidden>
+    <div class="modal__backdrop" data-close-modal></div>
+    <section class="modal__panel" role="dialog" aria-modal="true" aria-labelledby="rules-title" aria-describedby="rules-summary">
+      <div class="modal__bar grid">
+        <div class="modal__heading col-1-8">
+          <p class="overline">RULES &amp; DATA / 说明</p>
+          <h2 id="rules-title">规则与数据说明</h2>
+        </div>
+        <div class="modal__close-wrap col-10-12">
+          <button class="modal-close" id="modal-close" type="button" data-close-modal>
+            <span>关闭</span>
+            <span aria-hidden="true">×</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="modal__body">
+        <div class="grid modal__intro">
+          <section class="rules-column col-1-5" aria-labelledby="how-title">
+            <p class="overline" id="how-title">游戏规则 / HOW TO PLAY</p>
+            <p class="rules-summary" id="rules-summary">看封面，读信息，猜出它的评分。</p>
+            <ol class="rule-list">
+              <li>
+                <span class="rule-list__num">01</span>
+                <p>每局共 <strong>10 轮</strong>，从 774 部动画中随机抽取，同一局内不重复。</p>
+              </li>
+              <li>
+                <span class="rule-list__num">02</span>
+                <p>每轮只展示<strong>标题、封面、制作公司、放送开始日期</strong>。排名与评分在作答前隐藏。</p>
+              </li>
+              <li>
+                <span class="rule-list__num">03</span>
+                <p>在输入框中写下你的评分猜测（0.0—10.0，保留一位小数），然后点击<span class="nowrap">“确认”</span>。</p>
+              </li>
+              <li>
+                <span class="rule-list__num">04</span>
+                <p>确认后揭晓该动画的真实排名、真实评分与本轮得分；点击<span class="nowrap">“下一题”</span>进入下一轮。</p>
+              </li>
+              <li>
+                <span class="rule-list__num">05</span>
+                <p>10 轮结束后结算总分，单轮最高 10 分，整局满分 <strong>100 分</strong>。</p>
+              </li>
+            </ol>
+            <p class="rules-credit"><strong>设计 / 矛隼</strong><br>代码 / DeepSeek-V4.1-Flash</p>
+          </section>
+
+          <section class="formula-column col-7-12" aria-labelledby="formula-title">
+            <p class="overline" id="formula-title">计分方式 / SCORING</p>
+            <p class="formula-lead">设玩家猜测评分与真实评分的绝对差为 <em>x</em>，本轮得分为 <em>y = f(x)</em>。</p>
+
+            <div class="formula" role="math" aria-label="f(x) 等于：当 x 大于等于 0 且小于 1.5 时，10 减去 5 倍 x；当 x 大于等于 1.5 且小于 3 时，5 减去 3 分之 5 倍 x；当 x 大于等于 3 时，等于 0">
+              <div class="formula__lhs"><em>f</em>(<em>x</em>) =</div>
+              <div class="formula__cases">
+                <div class="formula__case">
+                  <span class="formula__expression">10 − 5<em>x</em></span>
+                  <span class="formula__condition">0 ≤ <em>x</em> &lt; 1.5</span>
+                </div>
+                <div class="formula__case">
+                  <span class="formula__expression">5 − <span class="frac"><span>5</span><span>3</span></span><em>x</em></span>
+                  <span class="formula__condition">1.5 ≤ <em>x</em> &lt; 3</span>
+                </div>
+                <div class="formula__case">
+                  <span class="formula__expression">0</span>
+                  <span class="formula__condition"><em>x</em> ≥ 3</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="scoring-example">
+              <div>
+                <span class="micro-label">举例 / EXAMPLE</span>
+                <p>你猜 8.8，真实评分为 9.2，绝对差 <em>x</em> = 0.4。</p>
+              </div>
+              <p class="scoring-example__result">f(0.4) = <strong>8.00</strong> 分</p>
+            </div>
+
+            <p class="formula-note">每轮得分保留两位小数，总分为 10 轮得分之和。猜测与真实评分完全一致得 10 分；误差达到或超过 3 分得 0 分。评分越低或越高都只按绝对差计算，不设方向奖励。</p>
+          </section>
+        </div>
+
+        <section class="data-section" aria-labelledby="data-title">
+          <div class="section-head data-section__head">
+            <div>
+              <p class="overline">SOURCE / 数据说明</p>
+              <h2 id="data-title">数据说明</h2>
+            </div>
+            <p>数据由DeepSeek整理</p>
+          </div>
+
+          <dl class="data-list">
+            <div class="data-row">
+              <dt>数据来源</dt>
+              <dd>Bangumi 番组计划　<a href="https://bangumi.tv" target="_blank" rel="noopener noreferrer">https://bangumi.tv</a></dd>
+            </div>
+            <div class="data-row">
+              <dt>抓取日期</dt>
+              <dd>2026-10-20</dd>
+            </div>
+            <div class="data-row">
+              <dt>条目类型</dt>
+              <dd>Bangumi 动画（type = 2），含 TV / WEB / OVA / 剧场版</dd>
+            </div>
+            <div class="data-row">
+              <dt>放送时间</dt>
+              <dd>1990-01-01 ≤ 放送/上映开始 &lt; 2026-10-01（实际 1992-07-18 至 2026-07-09）</dd>
+            </div>
+            <div class="data-row">
+              <dt>评分人数</dt>
+              <dd>&gt; 5000 人（抓取时）</dd>
+            </div>
+            <div class="data-row">
+              <dt>条目数量</dt>
+              <dd>774 部</dd>
+            </div>
+            <div class="data-row">
+              <dt>排名范围</dt>
+              <dd>Bangumi Rank 1 — 10378</dd>
+            </div>
+            <div class="data-row">
+              <dt>评分范围</dt>
+              <dd>3.6 — 9.2</dd>
+            </div>
+            <div class="data-row">
+              <dt>平台分布</dt>
+              <dd>TV 631 部　剧场版 109 部　WEB 18 部　OVA 16 部</dd>
+            </div>
+            <div class="data-row">
+              <dt>排序方式</dt>
+              <dd>按 Bangumi 排名由前到后（升序）</dd>
+            </div>
+            <div class="data-row">
+              <dt>字段说明</dt>
+              <dd>排名 = Bangumi 全站动画排名；评分 = 加权平均分（10 分制）；评分人数 = 参与评分人数；制作公司 = 动画制作公司；导演 = 监督 / 导演；放送开始 = 首播或上映日期</dd>
+            </div>
+            <div class="data-row">
+              <dt>数据口径</dt>
+              <dd>排名与评分以抓取时 Bangumi 页面/API 为准；评分人数会随时间变化；同一系列的不同季度、剧场版、OVA 分别作为独立条目统计</dd>
+            </div>
+            <div class="data-row">
+              <dt>中文名</dt>
+              <dd>优先使用 Bangumi 的中文名（name_cn），缺失时使用原名</dd>
+            </div>
+            <div class="data-row">
+              <dt>制作/导演</dt>
+              <dd>主要取自 Bangumi 条目的 staff 关系与信息栏；极少数未记载的条目已作人工补全</dd>
+            </div>
+            <div class="data-row">
+              <dt>排名空缺</dt>
+              <dd>因 1990 年前作品被排除，排名序列中会出现空缺（如 Rank 3、11 等）</dd>
+            </div>
+          </dl>
+        </section>
+      </div>
+
+      <div class="modal__footer">
+        <span>BANGUMI RATING GUESSER / RULES &amp; DATA</span>
+        <button class="modal-close modal-close--footer" type="button" data-close-modal>关闭说明 <span aria-hidden="true">×</span></button>
+      </div>
+    </section>
+  </div>
+
+  <div class="confirm-modal" id="restart-modal" hidden>
+    <div class="modal__backdrop" data-close-restart></div>
+    <section class="confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="restart-title" aria-describedby="restart-description">
+      <p class="overline">RESTART / 重新开始</p>
+      <h2 id="restart-title">返回主菜单？</h2>
+      <p class="confirm-dialog__copy" id="restart-description">当前这局的 10 轮进度与得分不会保留。</p>
+      <div class="confirm-dialog__actions">
+        <button class="dialog-action dialog-action--ghost" id="restart-cancel" type="button">取消</button>
+        <button class="dialog-action dialog-action--primary" id="restart-confirm" type="button">确认返回</button>
+      </div>
+    </section>
+  </div>
+
+  <p class="sr-only" id="live-status" aria-live="polite"></p>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
