@@ -2,9 +2,7 @@
 
 一款基于 Bangumi 动画数据的单页竞猜小游戏。每局 10 轮，根据标题、封面、制作公司与放送开始日期猜测该动画的 Bangumi 评分。
 
-## 启动方式
-
-直接双击 `index.html`，用浏览器打开即可。页面完全离线运行，无需安装依赖或启动服务器。
+网址：https://falcon-rusticolus.github.io/Bangumi-rating-guesser/
 
 ## 数据
 
