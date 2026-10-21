@@ -276,6 +276,13 @@
         <aside class="end-aside col-9-12">
           <p class="end-verdict" id="end-verdict">—</p>
           <p class="end-caption">分数依据 Bangumi 抓取时排名与评分计算。同一部动画在下一局中的位置可能再次出现。</p>
+          <button class="share-button" id="share-button" type="button">
+            <span class="share-button__copy">
+              <span class="share-button__index">RESULT CARD</span>
+              <span class="share-button__label">生成战绩截图</span>
+            </span>
+            <span class="share-button__arrow" aria-hidden="true">↗</span>
+          </button>
           <button class="back-button" id="back-menu-button" type="button">
             <span class="back-button__copy">
               <span class="back-button__index">RETURN / MAIN MENU</span>
@@ -465,6 +472,22 @@
       <div class="confirm-dialog__actions">
         <button class="dialog-action dialog-action--ghost" id="restart-cancel" type="button">取消</button>
         <button class="dialog-action dialog-action--primary" id="restart-confirm" type="button">确认返回</button>
+      </div>
+    </section>
+  </div>
+
+  <div class="share-modal" id="share-modal" hidden>
+    <div class="modal__backdrop" data-close-share></div>
+    <section class="share-dialog" role="dialog" aria-modal="true" aria-labelledby="share-title" aria-describedby="share-status">
+      <div class="share-dialog__head">
+        <p class="overline">RESULT CARD / 战绩截图</p>
+        <h2 id="share-title" tabindex="-1">本局战绩预览</h2>
+      </div>
+      <div class="share-dialog__preview" id="share-preview"></div>
+      <p class="share-status" id="share-status" aria-live="polite"></p>
+      <div class="share-dialog__actions">
+        <button class="share-action share-action--primary" id="share-save" type="button" disabled>保存图片</button>
+        <button class="share-action share-action--ghost" id="share-close" type="button">返回</button>
       </div>
     </section>
   </div>

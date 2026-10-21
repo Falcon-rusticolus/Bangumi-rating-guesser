@@ -1193,13 +1193,59 @@ a {
   gap: 18px;
   width: 100%;
   height: 74px;
-  margin-top: 20px;
+  margin-top: 10px;
   padding: 0 16px;
   border: 1px solid var(--ink);
   background: var(--pink);
   color: var(--ink);
   text-align: left;
   transition: background-color 160ms ease, color 160ms ease;
+}
+
+.share-button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  width: 100%;
+  height: 74px;
+  margin-top: 20px;
+  padding: 0 16px;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--cream);
+  text-align: left;
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+.share-button:hover {
+  background: var(--pink);
+  color: var(--ink);
+}
+
+.share-button__copy {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.share-button__index {
+  font-size: 7.5px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.12em;
+}
+
+.share-button__label {
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.share-button__arrow {
+  font-size: 22px;
+  font-weight: 400;
 }
 
 .back-button:hover {
@@ -1686,6 +1732,127 @@ a {
   color: var(--cream);
 }
 
+/* ============================== Result card ============================== */
+
+.share-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 230;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--pad);
+}
+
+.share-dialog {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  width: min(760px, 100%);
+  max-height: 94svh;
+  padding: clamp(18px, 2.4vw, 28px);
+  border: 1px solid var(--ink);
+  background: var(--cream);
+  animation: modal-in 180ms ease-out both;
+}
+
+.share-dialog__head {
+  flex: 0 0 auto;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--ink);
+}
+
+.share-dialog__head h2 {
+  margin: 0;
+  font-size: clamp(28px, 3vw, 40px);
+  font-weight: 700;
+  line-height: 0.96;
+  letter-spacing: -0.05em;
+}
+
+.share-dialog__head h2:focus {
+  outline: none;
+}
+
+.share-dialog__preview {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 220px;
+  padding: 14px 0;
+  overflow: auto;
+}
+
+.share-dialog__preview canvas {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 58svh;
+  border: 1px solid var(--ink);
+  background: var(--cream);
+}
+
+.share-status {
+  flex: 0 0 auto;
+  min-height: 15px;
+  margin: 0;
+  font-size: 9.5px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.share-dialog__actions {
+  flex: 0 0 auto;
+  display: grid;
+  grid-template-columns: 1.35fr 1fr;
+  gap: 10px;
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--ink);
+}
+
+.share-action {
+  display: flex;
+  align-items: center;
+  height: 56px;
+  padding: 0 14px;
+  border: 1px solid var(--ink);
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  text-align: left;
+  transition: background-color 140ms ease, color 140ms ease;
+}
+
+.share-action--primary {
+  background: var(--pink);
+  color: var(--ink);
+}
+
+.share-action--primary:hover:not(:disabled) {
+  background: var(--ink);
+  color: var(--cream);
+}
+
+.share-action--ghost {
+  background: transparent;
+  color: var(--ink);
+}
+
+.share-action--ghost:hover {
+  background: var(--ink);
+  color: var(--cream);
+}
+
+.share-action:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 /* ============================== Responsive ============================== */
 
 @media (max-width: 1100px) {
@@ -2047,8 +2214,31 @@ a {
     max-width: 24ch;
   }
 
-  .back-button {
+  .back-button,
+  .share-button {
     max-width: 360px;
+  }
+
+  .share-modal {
+    padding: 12px;
+  }
+
+  .share-dialog {
+    width: 100%;
+    max-height: 96svh;
+    padding: 16px;
+  }
+
+  .share-dialog__preview {
+    min-height: 180px;
+  }
+
+  .share-dialog__preview canvas {
+    max-height: 52svh;
+  }
+
+  .share-dialog__actions {
+    grid-template-columns: 1fr 1fr;
   }
 
   .modal__panel {

@@ -3,6 +3,19 @@
 
   const DATA = Array.isArray(window.ANIME_DATA) ? window.ANIME_DATA : [];
   const ROUND_COUNT = 10;
+  const RESULT_FONT = '"Inter", "Noto Sans SC", "Microsoft YaHei", sans-serif';
+  const RESULT_CARD = {
+    width: 1600,
+    height: 1695,
+    padding: 80,
+    gap: 20,
+    columns: 5,
+    dividerY: 480,
+    gridTop: 515,
+    coverHeight: 381,
+    rowHeight: 537,
+    rowGap: 26
+  };
 
   const screens = {
     menu: document.getElementById("screen-menu"),
@@ -57,7 +70,14 @@
     finalScore: document.getElementById("final-score"),
     endTitle: document.getElementById("end-title"),
     endVerdict: document.getElementById("end-verdict"),
-    scoreTableBody: document.getElementById("score-table-body")
+    scoreTableBody: document.getElementById("score-table-body"),
+    shareButton: document.getElementById("share-button"),
+    shareModal: document.getElementById("share-modal"),
+    shareTitle: document.getElementById("share-title"),
+    sharePreview: document.getElementById("share-preview"),
+    shareStatus: document.getElementById("share-status"),
+    shareSave: document.getElementById("share-save"),
+    shareClose: document.getElementById("share-close")
   };
 
   const state = {
@@ -69,6 +89,8 @@
   };
 
   let lastFocusedElement = null;
+  let renderedShareCanvas = null;
+  let shareRenderToken = 0;
 
   function pad(number, length) {
     return String(number).padStart(length, "0");
@@ -85,6 +107,153 @@
 
   function formatOneDecimal(value) {
     return (Math.round(value * 10) / 10).toFixed(1);
+  }
+
+  function loadCardImage(source) {
+    return new Promise(function (resolve, reject) {
+      const image = new Image();
+      image.decoding = "async";
+      image.onload = function () {
+        resolve(image);
+      };
+      image.onerror = function () {
+        reject(new Error("图片加载失败：" + source));
+      };
+      image.src = source;
+    });
+  }
+
+  function drawCroppedImage(context, image, x, y, width, height) {
+    const scale = Math.max(width / image.naturalWidth, height / image.naturalHeight);
+    const sourceWidth = width / scale;
+    const sourceHeight = height / scale;
+    const sourceX = (image.naturalWidth - sourceWidth) / 2;
+    const sourceY = (image.naturalHeight - sourceHeight) / 2;
+    context.drawImage(image, sourceX, sourceY, sourceWidth, sourceHeight, x, y, width, height);
+  }
+
+  function wrapCanvasText(context, text, maxWidth, maxLines) {
+    const characters = Array.from(text);
+    const lines = [];
+    let line = "";
+
+    characters.forEach(function (character) {
+      const candidate = line + character;
+      if (line && context.measureText(candidate).width > maxWidth) {
+        lines.push(line);
+        line = character;
+      } else {
+        line = candidate;
+      }
+    });
+
+    if (line) {
+      lines.push(line);
+    }
+
+    if (lines.length > maxLines) {
+      lines.length = maxLines;
+      let lastLine = lines[maxLines - 1];
+      while (lastLine.length && context.measureText(lastLine + "…").width > maxWidth) {
+        lastLine = lastLine.slice(0, -1);
+      }
+      lines[maxLines - 1] = lastLine + "…";
+    }
+
+    return lines;
+  }
+
+  async function buildResultCard() {
+    if (state.answers.length !== ROUND_COUNT) {
+      throw new Error("本局记录不完整");
+    }
+
+    if (document.fonts && document.fonts.ready) {
+      await document.fonts.ready;
+    }
+
+    const coverImages = await Promise.all(state.answers.map(function (answer) {
+      return loadCardImage(answer.cover);
+    }));
+    const qrImage = await loadCardImage("assets/qr-github.png");
+
+    const canvas = document.createElement("canvas");
+    canvas.width = RESULT_CARD.width;
+    canvas.height = RESULT_CARD.height;
+    const context = canvas.getContext("2d");
+    const ink = "#111111";
+    const cream = "#f2eee5";
+
+    context.imageSmoothingEnabled = true;
+    context.imageSmoothingQuality = "high";
+    context.textBaseline = "top";
+    context.fillStyle = cream;
+    context.fillRect(0, 0, RESULT_CARD.width, RESULT_CARD.height);
+
+    context.fillStyle = "rgba(240, 148, 156, 0.34)";
+    context.font = "700 240px " + RESULT_FONT;
+    context.fillText("bangumi", 48, 22);
+
+    context.fillStyle = ink;
+    context.font = "700 112px " + RESULT_FONT;
+    context.fillText("动画猜评分", 80, 138);
+
+    context.fillStyle = ink;
+    context.font = "700 20px " + RESULT_FONT;
+    context.fillText("总分", RESULT_CARD.padding, 312);
+    context.font = "700 100px " + RESULT_FONT;
+    context.fillText(formatScore(state.total) + "/100", RESULT_CARD.padding, 342);
+
+    const qrSize = 220;
+    const qrX = RESULT_CARD.width - RESULT_CARD.padding - qrSize;
+    const qrY = RESULT_CARD.padding;
+    context.drawImage(qrImage, qrX, qrY, qrSize, qrSize);
+    context.strokeStyle = ink;
+    context.lineWidth = 1;
+    context.strokeRect(qrX + 0.5, qrY + 0.5, qrSize - 1, qrSize - 1);
+    context.fillStyle = ink;
+    context.font = "700 20px " + RESULT_FONT;
+    context.fillText("扫码进入动画猜评分", qrX, qrY + qrSize + 16);
+    context.font = "400 16px " + RESULT_FONT;
+    context.fillText("bangumi rating guesser", qrX, qrY + qrSize + 44);
+
+    context.fillStyle = ink;
+    context.fillRect(RESULT_CARD.padding, RESULT_CARD.dividerY, RESULT_CARD.width - RESULT_CARD.padding * 2, 1);
+
+    const cellWidth = (RESULT_CARD.width - RESULT_CARD.padding * 2 - RESULT_CARD.gap * 4) / RESULT_CARD.columns;
+
+    state.answers.forEach(function (answer, index) {
+      const column = index % RESULT_CARD.columns;
+      const row = Math.floor(index / RESULT_CARD.columns);
+      const x = RESULT_CARD.padding + column * (cellWidth + RESULT_CARD.gap);
+      const y = RESULT_CARD.gridTop + row * (RESULT_CARD.rowHeight + RESULT_CARD.rowGap);
+
+      drawCroppedImage(context, coverImages[index], x, y, cellWidth, RESULT_CARD.coverHeight);
+      context.strokeStyle = ink;
+      context.lineWidth = 1;
+      context.strokeRect(x + 0.5, y + 0.5, cellWidth - 1, RESULT_CARD.coverHeight - 1);
+
+      context.fillStyle = ink;
+      context.font = "700 22px " + RESULT_FONT;
+      const titleLines = wrapCanvasText(context, answer.title, cellWidth, 3);
+      titleLines.forEach(function (line, lineIndex) {
+        context.fillText(line, x, y + RESULT_CARD.coverHeight + 14 + lineIndex * 28);
+      });
+
+      const metadataY = y + RESULT_CARD.coverHeight + 14 + 84 + 6;
+      context.font = "400 17px " + RESULT_FONT;
+      context.fillText(
+        "猜测 " + answer.guess.toFixed(1) + " / 实际 " + answer.actual.toFixed(1),
+        x,
+        metadataY
+      );
+
+      context.font = "700 19px " + RESULT_FONT;
+      const scorePrefix = answer.score > 0 ? "+" : "";
+      context.fillText("本轮得分 " + scorePrefix + answer.score.toFixed(2), x, metadataY + 26);
+    });
+
+    return canvas;
   }
 
   function scoreForGuess(guess, actual) {
@@ -293,6 +462,7 @@
     state.answers.push({
       round: state.index + 1,
       title: anime.title,
+      cover: anime.cover,
       guess: guess,
       actual: actual,
       error: error,
@@ -396,6 +566,7 @@
     elements.finalScore.textContent = formatScore(state.total);
     elements.endVerdict.textContent = verdictFor(state.total);
     buildScoreTable();
+    renderedShareCanvas = null;
     setScreen("end");
     elements.liveStatus.textContent = "游戏结束。本局总分 " + formatScore(state.total) + " 分。";
     window.setTimeout(function () {
@@ -406,6 +577,12 @@
   function returnToMenu() {
     elements.restartModal.hidden = true;
     elements.modal.hidden = true;
+    elements.shareModal.hidden = true;
+    elements.sharePreview.replaceChildren();
+    elements.shareStatus.textContent = "";
+    elements.shareSave.disabled = true;
+    renderedShareCanvas = null;
+    shareRenderToken += 1;
     document.body.classList.remove("modal-open");
     setScreen("menu");
     state.rounds = [];
@@ -443,6 +620,101 @@
     elements.restartModal.hidden = true;
     document.body.classList.remove("modal-open");
     returnToMenu();
+  }
+
+  function openShareDialog() {
+    if (state.answers.length !== ROUND_COUNT) {
+      return;
+    }
+
+    lastFocusedElement = elements.shareButton;
+    renderedShareCanvas = null;
+    elements.sharePreview.replaceChildren();
+    elements.shareSave.disabled = true;
+    elements.shareStatus.textContent = "正在生成战绩图片…";
+    elements.shareModal.hidden = false;
+    document.body.classList.add("modal-open");
+    const token = shareRenderToken + 1;
+    shareRenderToken = token;
+
+    window.setTimeout(function () {
+      elements.shareTitle.focus();
+    }, 20);
+
+    buildResultCard().then(function (canvas) {
+      if (token !== shareRenderToken) {
+        return;
+      }
+      renderedShareCanvas = canvas;
+      canvas.setAttribute("role", "img");
+      canvas.setAttribute("aria-label", "本局战绩图片预览");
+      elements.sharePreview.replaceChildren(canvas);
+      elements.shareStatus.textContent = "";
+      elements.shareSave.disabled = false;
+    }).catch(function () {
+      if (token !== shareRenderToken) {
+        return;
+      }
+      elements.shareStatus.textContent = "战绩图片生成失败，请稍后重试。";
+      elements.shareSave.disabled = true;
+    });
+  }
+
+  function closeShareDialog() {
+    if (elements.shareModal.hidden) {
+      return;
+    }
+    shareRenderToken += 1;
+    elements.shareModal.hidden = true;
+    elements.sharePreview.replaceChildren();
+    elements.shareStatus.textContent = "";
+    elements.shareSave.disabled = true;
+    renderedShareCanvas = null;
+    document.body.classList.remove("modal-open");
+    if (lastFocusedElement && typeof lastFocusedElement.focus === "function") {
+      lastFocusedElement.focus({ preventScroll: true });
+    }
+  }
+
+  async function saveShareImage() {
+    if (!renderedShareCanvas) {
+      return;
+    }
+
+    elements.shareSave.disabled = true;
+    elements.shareStatus.textContent = "正在准备图片…";
+
+    try {
+      const blob = await new Promise(function (resolve, reject) {
+        try {
+          renderedShareCanvas.toBlob(function (result) {
+            if (result) {
+              resolve(result);
+            } else {
+              reject(new Error("图片导出失败"));
+            }
+          }, "image/png");
+        } catch (error) {
+          reject(error);
+        }
+      });
+
+      const url = URL.createObjectURL(blob);
+      const downloadLink = document.createElement("a");
+      downloadLink.href = url;
+      downloadLink.download = "bangumi-rating-" + formatScore(state.total).replace(".", "-") + ".png";
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      downloadLink.remove();
+      window.setTimeout(function () {
+        URL.revokeObjectURL(url);
+      }, 1000);
+      elements.shareStatus.textContent = "图片已生成，正在下载。";
+    } catch (error) {
+      elements.shareStatus.textContent = "当前打开方式限制了图片导出，请通过本地服务器或 GitHub Pages 打开后再保存。";
+    } finally {
+      elements.shareSave.disabled = !renderedShareCanvas;
+    }
   }
 
   function openRules() {
@@ -483,7 +755,10 @@
     const first = focusable[0];
     const last = focusable[focusable.length - 1];
 
-    if (event.shiftKey && document.activeElement === first) {
+    if (!focusable.includes(document.activeElement)) {
+      event.preventDefault();
+      (event.shiftKey ? last : first).focus();
+    } else if (event.shiftKey && document.activeElement === first) {
       event.preventDefault();
       last.focus();
     } else if (!event.shiftKey && document.activeElement === last) {
@@ -504,6 +779,9 @@
     elements.restartButton.addEventListener("click", openRestartDialog);
     elements.restartCancel.addEventListener("click", closeRestartDialog);
     elements.restartConfirm.addEventListener("click", confirmRestart);
+    elements.shareButton.addEventListener("click", openShareDialog);
+    elements.shareClose.addEventListener("click", closeShareDialog);
+    elements.shareSave.addEventListener("click", saveShareImage);
 
     elements.modal.querySelectorAll("[data-close-modal]").forEach(function (button) {
       button.addEventListener("click", closeRules);
@@ -513,16 +791,25 @@
       button.addEventListener("click", closeRestartDialog);
     });
 
+    elements.shareModal.querySelectorAll("[data-close-share]").forEach(function (button) {
+      button.addEventListener("click", closeShareDialog);
+    });
+
     elements.modal.addEventListener("keydown", trapModalFocus);
     elements.restartModal.addEventListener("keydown", function (event) {
       trapFocusWithin(elements.restartModal, event);
+    });
+    elements.shareModal.addEventListener("keydown", function (event) {
+      trapFocusWithin(elements.shareModal, event);
     });
 
     document.addEventListener("keydown", function (event) {
       if (event.key !== "Escape") {
         return;
       }
-      if (!elements.restartModal.hidden) {
+      if (!elements.shareModal.hidden) {
+        closeShareDialog();
+      } else if (!elements.restartModal.hidden) {
         closeRestartDialog();
       } else if (!elements.modal.hidden) {
         closeRules();

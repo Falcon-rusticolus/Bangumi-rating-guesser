@@ -2,7 +2,13 @@
 
 一款基于 Bangumi 动画数据的单页竞猜小游戏。每局 10 轮，根据标题、封面、制作公司与放送开始日期猜测该动画的 Bangumi 评分。
 
-网址：https://falcon-rusticolus.github.io/Bangumi-rating-guesser/
+页面：https://falcon-rusticolus.github.io/Bangumi-rating-guesser/
+
+## 战绩截图
+
+游戏结束后可点击“生成战绩截图”，预览包含 10 轮封面、猜测与实际评分、总分及二维码的战绩图片，并保存为 PNG。
+
+> 由于浏览器的画布安全限制，保存图片需通过 HTTP(S) 访问页面（如 GitHub Pages，或在本目录运行 `python -m http.server` 后访问）。直接以 `file://` 打开时预览正常，但浏览器可能阻止导出图片。
 
 ## 数据
 
